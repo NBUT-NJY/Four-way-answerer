@@ -1,0 +1,137 @@
+C51 COMPILER V9.54   KEY                                                                   02/16/2023 22:20:28 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN key.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE user_code\Key\key.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\user_code\Beep;.\u
+                    -ser_code\Key;.\user_code\Public;.\user_code\Smg;.\user_code\Time) DEBUG OBJECTEXTEND PRINT(.\key.lst) TABS(2) OBJECT(key
+                    -.obj)
+
+line level    source
+
+   1          #include "key.h"
+   2          
+   3          /*******************************************************************************
+   4          * 函 数 名       : key_scan
+   5          * 函数功能     : 检测独立按键是否按下，按下则返回对应键值
+   6          * 输    入       : mode=0：单次扫描按键
+   7                     mode=1：连续扫描按键
+   8          * 输    出       : KEY1_PRESS：K1按下
+   9                     KEY2_PRESS：K2按下
+  10                     KEY3_PRESS：K3按下
+  11                     KEY4_PRESS：K4按下
+  12                     KEY_UNPRESS：未有按键按下
+  13          *******************************************************************************/
+  14          u8 key_scan(u8 mode)
+  15          {
+  16   1        static u8 key=1;
+  17   1      
+  18   1        if(mode)key=1;//连续扫描按键
+  19   1        if(key==1&&(KEY1==0||KEY2==0||KEY3==0||KEY4==0))//任意按键按下
+  20   1        {
+  21   2          delay_10us(1000);//消抖
+  22   2          key=0;
+  23   2          if(KEY1==0)
+  24   2            return PLEAR_1;
+  25   2          else if(KEY2==0)
+  26   2            return PLEAR_2;
+  27   2          else if(KEY3==0)
+  28   2            return PLEAR_3;
+  29   2          else if(KEY4==0)
+  30   2            return PLEAR_4; 
+  31   2        }
+  32   1        else if(KEY1==1&&KEY2==1&&KEY3==1&&KEY4==1) //无按键按下
+  33   1        {
+  34   2          key=1;      
+  35   2        }
+  36   1        return KEY_UNPRESS;   
+  37   1      }
+  38          
+  39          /*******************************************************************************
+  40          * 函 数 名       : key_matrix_ranks_scan
+  41          * 函数功能     : 使用行列式扫描方法，检测矩阵按键是否按下，按下则返回对应键
+             -值
+  42          * 输    入       : 无
+  43          * 输    出       : key_value：1-16，对应S1-S16键，
+  44                     0：按键未按下
+  45          *******************************************************************************/
+  46          u8 key_matrix_ranks_scan(void)
+  47          {
+  48   1        u8 key_value=0;
+  49   1      
+  50   1        KEY_MATRIX_PORT=0xf7;//给第一列赋值0，其余全为1
+  51   1        if(KEY_MATRIX_PORT!=0xf7)//判断第一列按键是否按下
+  52   1        {
+C51 COMPILER V9.54   KEY                                                                   02/16/2023 22:20:28 PAGE 2   
+
+  53   2          delay_10us(1000);//消抖
+  54   2          switch(KEY_MATRIX_PORT)//保存第一列按键按下后的键值  
+  55   2          {
+  56   3            case 0x77: key_value=1;break;
+  57   3            case 0xb7: key_value=5;break;
+  58   3            case 0xd7: key_value=9;break;
+  59   3            case 0xe7: key_value=13;break;
+  60   3          }
+  61   2        }
+  62   1        while(KEY_MATRIX_PORT!=0xf7);//等待按键松开 
+  63   1        
+  64   1        KEY_MATRIX_PORT=0xfb;//给第二列赋值0，其余全为1
+  65   1        if(KEY_MATRIX_PORT!=0xfb)//判断第二列按键是否按下
+  66   1        {
+  67   2          delay_10us(1000);//消抖
+  68   2          switch(KEY_MATRIX_PORT)//保存第二列按键按下后的键值  
+  69   2          {
+  70   3            case 0x7b: key_value=2;break;
+  71   3            case 0xbb: key_value=6;break;
+  72   3            case 0xdb: key_value=10;break;
+  73   3            case 0xeb: key_value=14;break;
+  74   3          }
+  75   2        }
+  76   1        while(KEY_MATRIX_PORT!=0xfb);//等待按键松开 
+  77   1        
+  78   1        KEY_MATRIX_PORT=0xfd;//给第三列赋值0，其余全为1
+  79   1        if(KEY_MATRIX_PORT!=0xfd)//判断第三列按键是否按下
+  80   1        {
+  81   2          delay_10us(1000);//消抖
+  82   2          switch(KEY_MATRIX_PORT)//保存第三列按键按下后的键值  
+  83   2          {
+  84   3            case 0x7d: key_value=3;break;
+  85   3            case 0xbd: key_value=7;break;
+  86   3            case 0xdd: key_value=11;break;
+  87   3            case 0xed: key_value=15;break;
+  88   3          }
+  89   2        }
+  90   1        while(KEY_MATRIX_PORT!=0xfd);//等待按键松开 
+  91   1        
+  92   1        KEY_MATRIX_PORT=0xfe;//给第四列赋值0，其余全为1
+  93   1        if(KEY_MATRIX_PORT!=0xfe)//判断第四列按键是否按下
+  94   1        {
+  95   2          delay_10us(1000);//消抖
+  96   2          switch(KEY_MATRIX_PORT)//保存第四列按键按下后的键值  
+  97   2          {
+  98   3            case 0x7e: key_value=4;break;
+  99   3            case 0xbe: key_value=8;break;
+ 100   3            case 0xde: key_value=12;break;
+ 101   3            case 0xee: key_value=16;break;
+ 102   3          }
+ 103   2        }
+ 104   1        while(KEY_MATRIX_PORT!=0xfe);//等待按键松开
+ 105   1        
+ 106   1        return key_value;   
+ 107   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    314    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.54   KEY                                                                   02/16/2023 22:20:28 PAGE 3   
+
+   DATA SIZE        =      1       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

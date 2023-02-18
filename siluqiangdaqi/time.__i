@@ -1,0 +1,1 @@
+"user_code\Time\time.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\user_code\Beep;.\user_code\Key;.\user_code\Public;.\user_code\Smg;.\user_code\Time) DEBUG OBJECTEXTEND PRINT(.\time.lst) TABS (2) OBJECT(time.obj)

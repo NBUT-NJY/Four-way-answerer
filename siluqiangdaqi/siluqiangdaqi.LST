@@ -1,0 +1,243 @@
+C51 COMPILER V9.54   SILUQIANGDAQI                                                         02/16/2023 23:15:51 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SILUQIANGDAQI
+OBJECT MODULE PLACED IN siluqiangdaqi.OBJ
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE siluqiangdaqi.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\user_code\Beep;.\user_
+                    -code\Key;.\user_code\Public;.\user_code\Smg;.\user_code\Time) DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include "time.h"
+   3          #include "key.h"
+   4          #include "smg.h"
+   5          #include "beep.h"
+   6          #include "public.h"
+   7          
+   8          //抢答倒计时
+   9          u8 answer_time(u8 error_plear,u16 time_sec)
+  10          {
+  11   1         u8 key = 0;
+  12   1         u8 time_buf[8];
+  13   1         if(error_plear == 0)//如果有选手提前抢答，直接跳过倒计时过程
+  14   1         {
+  15   2            return 0;
+  16   2         }
+  17   1         time0_start(time_sec);//开始计时
+  18   1         while (1)
+  19   1         {
+  20   2            key = key_matrix_ranks_scan();//获取矩阵按键按下的按键
+*** WARNING C206 IN LINE 20 OF siluqiangdaqi.c: 'key_matrix_ranks_scan': missing function-prototype
+  21   2            if(key == ENTER)//回答正确或错误停止计时
+  22   2            {
+  23   3               time0_stop();//停止计时
+  24   3               while (1)
+  25   3               {
+  26   4                  key = key_matrix_ranks_scan();//获取矩阵按键按下的按键
+  27   4                  if(key == REST)//如果裁判按下重置则退出抢答成功剩余计时展示
+  28   4                     {
+  29   5                        return 0;
+  30   5                     }
+  31   4                  time_buf[0]=gsmg_code[error_plear];//选手编号
+  32   4                time_buf[1]=0x40;
+  33   4                time_buf[2]=0x40;
+  34   4                time_buf[3]=0x40;
+  35   4                time_buf[4]=gsmg_code[last_gsec/1000];
+  36   4                time_buf[5]=gsmg_code[(last_gsec%1000)/100];
+  37   4                time_buf[6]=gsmg_code[(last_gsec%100)/10];
+  38   4                time_buf[7]=gsmg_code[last_gsec%10];          //秒显示
+  39   4                  smg_display(time_buf,1);//显示  
+  40   4               }
+  41   3            }
+  42   2            else if(gsec <= 0)//倒计时结束
+  43   2            {
+  44   3               time0_stop();
+  45   3               while (1)
+  46   3               {
+  47   4                  key = key_matrix_ranks_scan();//获取矩阵按键按下的按键
+  48   4                  if(key == REST)//如果裁判按下重置则退出倒计时结束展示
+  49   4                  {
+  50   5                     return 0;
+  51   5                  }
+  52   4                  time_buf[0]=gsmg_code[error_plear];//选手编号
+  53   4                time_buf[1]=0x40;
+C51 COMPILER V9.54   SILUQIANGDAQI                                                         02/16/2023 23:15:51 PAGE 2   
+
+  54   4                time_buf[2]=0x40;
+  55   4                time_buf[3]=0x40;
+  56   4                time_buf[4]=gsmg_code[0];
+  57   4                time_buf[5]=gsmg_code[0];
+  58   4                time_buf[6]=gsmg_code[0];
+  59   4                time_buf[7]=gsmg_code[0]; 
+  60   4                  smg_display(time_buf,1);//显示
+  61   4                  beep_alarm(10,10);//蜂鸣器响
+  62   4               }
+  63   3               return 0;
+  64   3            }
+  65   2            else//刷新剩余时间
+  66   2            {
+  67   3               time_buf[0]=gsmg_code[error_plear];//选手编号
+  68   3             time_buf[1]=0x40;
+  69   3             time_buf[2]=0x40;
+  70   3             time_buf[3]=0x40;
+  71   3             time_buf[4]=gsmg_code[gsec/1000];
+  72   3             time_buf[5]=gsmg_code[(gsec%1000)/100];
+  73   3             time_buf[6]=gsmg_code[(gsec%100)/10];
+  74   3             time_buf[7]=gsmg_code[gsec%10]; 
+  75   3               smg_display(time_buf,1);//显示   
+  76   3            }
+  77   2         }
+  78   1      }
+  79          
+  80          //抢答函数
+  81          u8 answer(u8 error_plear)
+  82          {
+  83   1         u8 key = 0;
+  84   1         if(error_plear != 0)//如果有选手提前抢答，直接跳过抢答过程
+  85   1         {
+  86   2            return 0;
+  87   2         }
+  88   1         while (1)
+  89   1         {
+  90   2            key = key_scan(0);
+  91   2            if(key != 0)//有选手抢答成功返回选手编号
+  92   2            {
+  93   3               return key;
+  94   3            }
+  95   2         }
+  96   1         
+  97   1      }
+  98          
+  99          //准备函数
+ 100          u8 ready(void)
+ 101          {
+ 102   1         u8 key = 0;
+ 103   1         u8 key_plear = 0;
+ 104   1         u8 ready_buf[8];
+ 105   1         ready_buf[0] = R;
+ 106   1         ready_buf[1] = E;
+ 107   1         ready_buf[2] = A;
+ 108   1         ready_buf[3] = D;
+ 109   1         ready_buf[4] = Y;
+ 110   1         ready_buf[5] = 0x40;
+ 111   1         ready_buf[6] = 0x40;
+ 112   1         ready_buf[7] = 0x40;
+ 113   1         while (1)
+ 114   1         {
+ 115   2            key = key_matrix_ranks_scan();//获取矩阵按键按下的按键
+C51 COMPILER V9.54   SILUQIANGDAQI                                                         02/16/2023 23:15:51 PAGE 3   
+
+ 116   2            key_plear = key_scan(0);//检测是否选手提前抢答
+ 117   2            if (key == ENTER)//裁判按下开始健
+ 118   2            {
+ 119   3               break;
+ 120   3            }
+ 121   2            else if(key_plear != 0)//有选手提前抢答
+ 122   2            {
+ 123   3               while(1)
+ 124   3               {
+ 125   4                  key = key_matrix_ranks_scan();//获取矩阵按键按下的按键
+ 126   4                  if(key == REST)//如果裁判按下重置则退出提前抢答选手展示
+ 127   4                  {
+ 128   5                     break;
+ 129   5                  }
+ 130   4                  ready_buf[0] = gsmg_code[key_plear];
+ 131   4                  ready_buf[1] = 0x40;
+ 132   4                  ready_buf[2] = 0x40;
+ 133   4                  ready_buf[3] = E;
+ 134   4                  ready_buf[4] = R;
+ 135   4                  ready_buf[5] = R;
+ 136   4                  ready_buf[6] = O;
+ 137   4                  ready_buf[7] = R;
+ 138   4                  smg_display(ready_buf,1);//显示提前抢答选手和错误信息
+ 139   4                  beep_alarm(10,10);
+ 140   4               }
+ 141   3               return key_plear;
+ 142   3            }
+ 143   2            else//无选手抢答且裁判未按开始建
+ 144   2            {  
+ 145   3               smg_display(ready_buf,1);//显示'READY'
+ 146   3            }
+ 147   2         }
+ 148   1         return 0;
+ 149   1      }
+ 150          
+ 151          //倒计时时间设定函数
+ 152          u16 countdown_t(void)
+ 153          {
+ 154   1         u8 key = 0;
+ 155   1         u8 time_buf[8];//储存倒计时
+ 156   1         u8 min = 0;//倒计时分定义
+ 157   1         u16 sec = 0;//倒计时秒定义
+ 158   1         while (1)
+ 159   1         {
+ 160   2            key = key_matrix_ranks_scan();//获取矩阵按键按下的按键
+ 161   2            if(key == MINUP && min < 99)//分钟倒计时+1
+ 162   2            {
+ 163   3               min++;
+ 164   3               //beep_alarm(1000,10);//短暂提示音
+ 165   3            }
+ 166   2            else if(key == SECUP && sec < 99)//秒倒计时+1
+ 167   2            {
+ 168   3               sec++;
+ 169   3               //beep_alarm(1000,10);//短暂提示音
+ 170   3            }
+ 171   2            else if(key == REST)//重置倒计时
+ 172   2            {
+ 173   3               min = 0;
+ 174   3               sec = 0;
+ 175   3               //beep_alarm(1000,10);//短暂提示音
+ 176   3            }
+ 177   2            else if(key == ENTER)//倒计时时间确定
+C51 COMPILER V9.54   SILUQIANGDAQI                                                         02/16/2023 23:15:51 PAGE 4   
+
+ 178   2            {
+ 179   3               //beep_alarm(1000,10);//短暂提示音
+ 180   3               break;
+ 181   3            }
+ 182   2            time_buf[0] = gsmg_code[min/10];
+ 183   2            time_buf[1] = gsmg_code[min%10];//分
+ 184   2            time_buf[2] = 0x40;//-
+ 185   2          time_buf[3] = gsmg_code[sec/10];
+ 186   2          time_buf[4] = gsmg_code[sec%10];//秒
+ 187   2          time_buf[5] = 0x40;//-
+ 188   2            time_buf[6] = 0x40;//-
+ 189   2            time_buf[7] = 0x40;//-
+ 190   2            smg_display(time_buf,1);//显示  
+ 191   2         }
+ 192   1         sec = sec + min*60;
+ 193   1         return sec;
+ 194   1      }
+ 195          
+ 196          //程序主函数
+ 197          void main()                                
+ 198          {   
+ 199   1         u8 answer_plear;                 //抢答选手
+ 200   1         u16 time_sec;                     //倒计时时间
+ 201   1         time0_init();
+ 202   1         while(1)
+ 203   1          {
+ 204   2            time_sec = 0;               //重置倒计时时间
+ 205   2            answer_plear = 0;          //重置成功抢答的选手
+ 206   2            time_sec = countdown_t();  //获取倒计时时间
+ 207   2            answer_plear = ready();     //准备函数
+ 208   2            answer_plear = answer(answer_plear);     //返回抢答成功的选手
+ 209   2            answer_time(answer_plear,time_sec); 
+ 210   2          }
+ 211   1      }
+*** WARNING C294 IN LINE 63 OF siluqiangdaqi.c: unreachable code
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    761    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      35
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

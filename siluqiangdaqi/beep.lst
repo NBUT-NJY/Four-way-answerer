@@ -1,0 +1,42 @@
+C51 COMPILER V9.54   BEEP                                                                  02/16/2023 22:20:28 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BEEP
+OBJECT MODULE PLACED IN beep.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE user_code\Beep\beep.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\user_code\Beep;.
+                    -\user_code\Key;.\user_code\Public;.\user_code\Smg;.\user_code\Time) DEBUG OBJECTEXTEND PRINT(.\beep.lst) TABS(2) OBJECT(
+                    -beep.obj)
+
+line level    source
+
+   1          #include "beep.h"
+   2          
+   3          /*******************************************************************************
+   4          * 函 数 名       : beep_alarm
+   5          * 函数功能     : 蜂鸣器报警函数
+   6          * 输    入       : time：报警持续时间
+   7                     fre：报警频率
+   8          * 输    出       : 无
+   9          *******************************************************************************/
+  10          void beep_alarm(u16 time,u16 fre)
+  11          {
+  12   1        while(time--)
+  13   1        {
+  14   2          BEEP=!BEEP;
+  15   2          delay_10us(fre);  
+  16   2        }   
+  17   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     33    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

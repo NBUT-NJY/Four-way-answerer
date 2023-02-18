@@ -1,0 +1,59 @@
+C51 COMPILER V9.54   SMG                                                                   02/16/2023 22:20:28 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SMG
+OBJECT MODULE PLACED IN smg.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE user_code\Smg\smg.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\user_code\Beep;.\u
+                    -ser_code\Key;.\user_code\Public;.\user_code\Smg;.\user_code\Time) DEBUG OBJECTEXTEND PRINT(.\smg.lst) TABS(2) OBJECT(smg
+                    -.obj)
+
+line level    source
+
+   1          #include "smg.h"
+   2          
+   3          //共阴极数码管显示0~9的段码数据
+   4          u8 gsmg_code[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
+   5          /*******************************************************************************
+   6          * 函 数 名       : smg_display
+   7          * 函数功能     : 动态数码管显示
+   8          * 输    入       : dat：要显示的数据
+   9                     pos：从左开始第几个位置开始显示，范围1-8
+  10          * 输    出       : 无
+  11          *******************************************************************************/
+  12          void smg_display(u8 dat[],u8 pos)
+  13          {
+  14   1        u8 i=0;
+  15   1        u8 pos_temp=pos-1;
+  16   1      
+  17   1        for(i=pos_temp;i<8;i++)
+  18   1        {
+  19   2            switch(i)//位选
+  20   2          {
+  21   3            case 0: LSC=1;LSB=1;LSA=1;break;
+  22   3            case 1: LSC=1;LSB=1;LSA=0;break;
+  23   3            case 2: LSC=1;LSB=0;LSA=1;break;
+  24   3            case 3: LSC=1;LSB=0;LSA=0;break;
+  25   3            case 4: LSC=0;LSB=1;LSA=1;break;
+  26   3            case 5: LSC=0;LSB=1;LSA=0;break;
+  27   3            case 6: LSC=0;LSB=0;LSA=1;break;
+  28   3            case 7: LSC=0;LSB=0;LSA=0;break;
+  29   3          }
+  30   2          SMG_A_DP_PORT=dat[i-pos_temp];//传送段选数据
+  31   2          delay_10us(100);//延时一段时间，等待显示稳定
+  32   2          SMG_A_DP_PORT=0x00;//消音
+  33   2        }
+  34   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    146    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
